@@ -1,12 +1,13 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 
 async function addAllCategoryPosts() {
   const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'kadher',
-    database: 'taste_modelling',
-    port: 3306
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'kadher',  // Reads from .env
+    database: process.env.DB_NAME || 'taste_modelling',
+    port: process.env.DB_PORT || 3306
   });
   
   const posts = [
@@ -39,15 +40,22 @@ async function addAllCategoryPosts() {
     { user_id: 4, title: 'Best Drugstore Makeup', content: 'Affordable products that actually work.', category: 'Beauty' }
   ];
   
-  for (const post of posts) {
-    await pool.query(
-      'INSERT INTO posts (user_id, title, content, category) VALUES (?, ?, ?, ?)',
-      [post.user_id, post.title, post.content, post.category]
-    );
-    console.log(`✅ Added: ${post.title} (${post.category})`);
+  try {
+    console.log('📝 Adding posts for all categories...\n');
+    
+    for (const post of posts) {
+      await pool.query(
+        'INSERT INTO posts (user_id, title, content, category) VALUES (?, ?, ?, ?)',
+        [post.user_id, post.title, post.content, post.category]
+      );
+      console.log(`✅ Added: ${post.title} (${post.category})`);
+    }
+    
+    console.log('\n🎉 All category posts added successfully!');
+  } catch (err) {
+    console.error('❌ Error:', err.message);
   }
   
-  console.log('\n🎉 All category posts added!');
   process.exit();
 }
 

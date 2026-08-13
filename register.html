@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join - Taste Modelling Creators</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-box">
+    <div class="auth-logo">TasteMC</div>
+    <div class="auth-tagline">Join a community of cultural curators</div>
+
+    <h2 class="auth-title">Create Your Account</h2>
+
+    <div id="alertBox" class="alert"></div>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="Your name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="speciality">Your Taste Speciality</label>
+        <select id="speciality" name="speciality" required>
+          <option value="" disabled selected>Choose your domain</option>
+          <option value="Food">Food &amp; Culinary</option>
+          <option value="Fashion">Fashion &amp; Style</option>
+          <option value="Music">Music &amp; Sound</option>
+          <option value="Art">Art &amp; Design</option>
+          <option value="Lifestyle">Lifestyle &amp; Culture</option>
+          <option value="Travel">Travel &amp; Places</option>
+          <option value="Beauty">Beauty &amp; Wellness</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password <small style="color:var(--text-muted)">(min 6 characters)</small></label>
+        <input type="password" id="password" name="password" placeholder="Create a password" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+        Create Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/login.html">Sign In</a>
+    </div>
+    <div class="auth-footer" style="margin-top:0.5rem;">
+      <a href="/" style="color: var(--text-muted);">&larr; Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+  checkAlreadyLoggedIn();
+
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = 'alert';
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Creating account...';
+
+    const body = {
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value,
+      speciality: document.getElementById('speciality').value
+    };
+
+    if (!body.speciality) {
+      alertBox.className = 'alert alert-error show';
+      alertBox.textContent = 'Please choose your taste speciality.';
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alertBox.className = 'alert alert-success show';
+        alertBox.textContent = `Welcome, ${data.name}! Setting up your dashboard...`;
+        setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+      } else {
+        alertBox.className = 'alert alert-error show';
+        alertBox.textContent = data.message || 'Registration failed.';
+        btn.disabled = false;
+        btn.innerHTML = 'Create Account';
+      }
+    } catch (err) {
+      alertBox.className = 'alert alert-error show';
+      alertBox.textContent = 'Connection error. Please try again.';
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account';
+    }
+  });
+</script>
+</body>
+</html>

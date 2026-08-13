@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In - Taste Modelling Creators</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-box">
+    <div class="auth-logo">TasteMC</div>
+    <div class="auth-tagline">Curating culture, one taste at a time</div>
+
+    <h2 class="auth-title">Welcome Back</h2>
+
+    <div id="alertBox" class="alert"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Your password" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/register.html">Join Free</a>
+    </div>
+    <div class="auth-footer" style="margin-top:0.5rem;">
+      <a href="/" style="color: var(--text-muted);">&larr; Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+  checkAlreadyLoggedIn();
+
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = 'alert';
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Signing in...';
+
+    const body = {
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value
+    };
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alertBox.className = 'alert alert-success show';
+        alertBox.textContent = `Welcome back, ${data.name}! Redirecting...`;
+        setTimeout(() => { window.location.href = '/dashboard.html'; }, 900);
+      } else {
+        alertBox.className = 'alert alert-error show';
+        alertBox.textContent = data.message || 'Login failed.';
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+      }
+    } catch (err) {
+      alertBox.className = 'alert alert-error show';
+      alertBox.textContent = 'Connection error. Please try again.';
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>

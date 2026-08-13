@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taste MC - Explore</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #fdf8f5, #fff5f0); }
+    nav { background: rgba(255,255,255,0.95); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
+    .nav-logo { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #f7931e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: #4a4a4a; cursor: pointer; }
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 20px; }
+    h1 { text-align: center; margin-bottom: 1rem; color: #333; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 2rem; }
+    .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .category-card { background: white; border-radius: 15px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .category-card:hover { transform: translateY(-5px); background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; }
+    .category-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .category-name { font-weight: 600; }
+    .back-btn { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; margin-bottom: 20px; }
+    footer { text-align: center; padding: 2rem; color: #999; margin-top: 3rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo">Taste<span>MC</span></div>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/creators.html">Creators</a></li>
+      <li><a href="/explore.html">Explore</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <button class="back-btn" onclick="window.location.href='/'">← Back to Home</button>
+    <h1>🔍 Explore Taste Categories</h1>
+    <p class="subtitle">Discover content by category</p>
+    
+    <div class="categories-grid">
+      <div class="category-card" onclick="goToCategory('Food & Culinary')"><div class="category-icon">🍕</div><div class="category-name">Food</div></div>
+      <div class="category-card" onclick="goToCategory('Fashion')"><div class="category-icon">👗</div><div class="category-name">Fashion</div></div>
+      <div class="category-card" onclick="goToCategory('Music')"><div class="category-icon">🎵</div><div class="category-name">Music</div></div>
+      <div class="category-card" onclick="goToCategory('Art')"><div class="category-icon">🎨</div><div class="category-name">Art</div></div>
+      <div class="category-card" onclick="goToCategory('Lifestyle')"><div class="category-icon">🌿</div><div class="category-name">Lifestyle</div></div>
+      <div class="category-card" onclick="goToCategory('Travel')"><div class="category-icon">✈️</div><div class="category-name">Travel</div></div>
+      <div class="category-card" onclick="goToCategory('Beauty')"><div class="category-icon">💄</div><div class="category-name">Beauty</div></div>
+    </div>
+  </div>
+
+  <footer>&copy; 2025 Taste MC &mdash; Curating culture, one taste at a time.</footer>
+
+  <script>
+    function goToCategory(category) {
+      window.location.href = `/?category=${encodeURIComponent(category)}`;
+    }
+  </script>
+</body>
+</html>

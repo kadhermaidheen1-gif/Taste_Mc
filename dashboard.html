@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Taste Modelling Creators</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">Taste<span>MC</span></div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/creators.html">Creators</a></li>
+    <li><a href="/explore.html">Explore</a></li>
+  </ul>
+  <div class="nav-auth">
+    <span id="navName" style="color:var(--text-muted);font-size:0.9rem;"></span>
+    <button class="btn btn-outline" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD HEADER -->
+<div class="dashboard-header">
+  <h2 id="dashWelcome">Your Dashboard</h2>
+  <p>Manage your taste profile and share your creations</p>
+</div>
+
+<div class="dashboard-grid">
+  <!-- LEFT: PROFILE -->
+  <div>
+    <div class="profile-card" id="profileCard">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-name" id="profileName">Loading...</div>
+      <div class="profile-speciality" id="profileSpeciality"></div>
+      <div class="profile-bio" id="profileBio">No bio yet.</div>
+      <button class="btn btn-outline" style="width:100%;font-size:0.85rem;" onclick="toggleBioEdit()">Edit Bio</button>
+    </div>
+
+    <div id="bioEditBox" style="display:none; margin-top:1rem;">
+      <div class="post-form">
+        <h3>Update Your Bio</h3>
+        <div class="form-group">
+          <textarea id="bioInput" placeholder="Tell the world about your taste expertise..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="saveBio()">Save Bio</button>
+        <div id="bioAlert" class="alert" style="margin-top:0.75rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: POSTS -->
+  <div>
+    <!-- POST FORM -->
+    <div class="post-form">
+      <h3>Share a Taste Insight</h3>
+      <div id="postAlert" class="alert"></div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="postCategory">
+          <option value="" disabled selected>Choose category</option>
+          <option value="Food">Food &amp; Culinary</option>
+          <option value="Fashion">Fashion &amp; Style</option>
+          <option value="Music">Music &amp; Sound</option>
+          <option value="Art">Art &amp; Design</option>
+          <option value="Lifestyle">Lifestyle &amp; Culture</option>
+          <option value="Travel">Travel &amp; Places</option>
+          <option value="Beauty">Beauty &amp; Wellness</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="postTitle" placeholder="Your taste insight headline..." />
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="postContent" style="min-height:100px;" placeholder="Share your taste perspective, review, or insight..."></textarea>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="submitPost()">Publish Insight</button>
+    </div>
+
+    <!-- MY POSTS -->
+    <h3 style="margin-bottom:1rem;color:var(--text-muted);font-size:0.95rem;font-weight:600;">COMMUNITY FEED</h3>
+    <div id="feedGrid">
+      <div class="empty"><div class="empty-icon">&#9749;</div><p>Loading feed...</p></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 Taste Modelling Creators
+</footer>
+
+<script src="/js/main.js"></script>
+<script>
+  requireLogin();
+
+  async function loadProfile() {
+    const res = await fetch('/api/profile');
+    const data = await res.json();
+    if (!data.success) return;
+    const u = data.user;
+    document.getElementById('profileAvatar').textContent = u.name.charAt(0).toUpperCase();
+    document.getElementById('profileName').textContent = u.name;
+    document.getElementById('profileSpeciality').textContent = u.speciality;
+    document.getElementById('profileBio').textContent = u.bio || 'No bio yet.';
+    document.getElementById('bioInput').value = u.bio || '';
+    document.getElementById('dashWelcome').textContent = `Welcome back, ${u.name.split(' ')[0]}`;
+    document.getElementById('navName').textContent = u.name;
+  }
+
+  function toggleBioEdit() {
+    const box = document.getElementById('bioEditBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function saveBio() {
+    const bio = document.getElementById('bioInput').value.trim();
+    const alert = document.getElementById('bioAlert');
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bio })
+    });
+    const data = await res.json();
+    alert.className = data.success ? 'alert alert-success show' : 'alert alert-error show';
+    alert.textContent = data.message;
+    if (data.success) {
+      document.getElementById('profileBio').textContent = bio || 'No bio yet.';
+      setTimeout(() => { document.getElementById('bioEditBox').style.display = 'none'; }, 800);
+    }
+  }
+
+  async function loadFeed() {
+    const res = await fetch('/api/posts');
+    const data = await res.json();
+    const posts = data.posts || [];
+    const grid = document.getElementById('feedGrid');
+    if (!posts.length) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">&#9749;</div><p>No posts yet. Be the first!</p></div>';
+      return;
+    }
+    grid.innerHTML = posts.map(p => `
+      <div class="card" style="margin-bottom:1rem;">
+        <span class="card-tag">${p.category}</span>
+        <div class="card-title">${escHtml(p.title)}</div>
+        <div class="card-content">${escHtml(p.content)}</div>
+        <div class="card-meta">
+          <span>by ${escHtml(p.author)} &bull; ${p.speciality}</span>
+          <span>${new Date(p.created_at).toLocaleDateString()}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function submitPost() {
+    const alert = document.getElementById('postAlert');
+    const title = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    const category = document.getElementById('postCategory').value;
+
+    if (!title || !content || !category) {
+      alert.className = 'alert alert-error show';
+      alert.textContent = 'Please fill in all fields.';
+      return;
+    }
+
+    const res = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, category })
+    });
+    const data = await res.json();
+    alert.className = data.success ? 'alert alert-success show' : 'alert alert-error show';
+    alert.textContent = data.message;
+    if (data.success) {
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postCategory').value = '';
+      setTimeout(() => { alert.className = 'alert'; loadFeed(); }, 800);
+    }
+  }
+
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
+
+  loadProfile();
+  loadFeed();
+</script>
+</body>
+</html>

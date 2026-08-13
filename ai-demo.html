@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Taste Features</title>
+    <style>
+        body { font-family: Arial; max-width: 900px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #ff6b35; text-align: center; }
+        .card { background: white; padding: 20px; margin: 20px 0; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #ff6b35; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #e55a2b; }
+        .result { background: #e8f4f8; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; }
+        .loading { color: #666; font-style: italic; }
+        .badge { background: #ff6b35; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Generative AI Taste Features</h1>
+    <p style="text-align: center">Powered by Hugging Face (GPT-2, FLAN-T5, DialoGPT)</p>
+    
+    <!-- Feature 1 -->
+    <div class="card">
+        <h2>🍽️ AI Taste Description Generator</h2>
+        <input type="text" id="dish" placeholder="Dish name (e.g., Spicy Ramen)">
+        <input type="text" id="ingredients" placeholder="Ingredients (e.g., noodles, pork, egg)">
+        <select id="mood">
+            <option value="excited">Excited 😃</option>
+            <option value="calm">Calm 😌</option>
+            <option value="critical">Critical 🧐</option>
+        </select>
+        <button onclick="generateDescription()">Generate Description</button>
+        <div id="descResult" class="result"></div>
+    </div>
+    
+    <!-- Feature 2 -->
+    <div class="card">
+        <h2>🔄 AI Flavor Pairing Suggester</h2>
+        <input type="text" id="ingredient" placeholder="Ingredient (e.g., dark chocolate)">
+        <button onclick="getPairings()">Get Pairings</button>
+        <div id="pairingResult" class="result"></div>
+    </div>
+    
+    <!-- Feature 3 -->
+    <div class="card">
+        <h2>😊 AI Sentiment Analyzer</h2>
+        <textarea id="review" rows="3" placeholder="Write a food review..."></textarea>
+        <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+        <div id="sentimentResult" class="result"></div>
+    </div>
+    
+    <!-- Feature 4 -->
+    <div class="card">
+        <h2>📖 AI Recipe Generator</h2>
+        <input type="text" id="recipeIngredients" placeholder="Ingredients (e.g., chicken, rice, soy sauce)">
+        <input type="text" id="cuisine" placeholder="Cuisine (optional: Italian, Asian, Mexican)">
+        <button onclick="generateRecipe()">Generate Recipe</button>
+        <div id="recipeResult" class="result"></div>
+    </div>
+    
+    <script>
+        async function generateDescription() {
+            const dish = document.getElementById('dish').value;
+            const ingredients = document.getElementById('ingredients').value;
+            const mood = document.getElementById('mood').value;
+            
+            if (!dish || !ingredients) {
+                alert('Please fill dish and ingredients');
+                return;
+            }
+            
+            document.getElementById('descResult').innerHTML = '<div class="loading">🍳 AI is tasting your dish...</div>';
+            
+            const response = await fetch('/api/ai/describe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dish, ingredients, mood })
+            });
+            
+            const data = await response.json();
+            document.getElementById('descResult').innerHTML = data.description || 'Could not generate description.';
+        }
+        
+        async function getPairings() {
+            const ingredient = document.getElementById('ingredient').value;
+            if (!ingredient) {
+                alert('Please enter an ingredient');
+                return;
+            }
+            
+            document.getElementById('pairingResult').innerHTML = '<div class="loading">🔍 Finding perfect pairings...</div>';
+            
+            const response = await fetch('/api/ai/pairings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ingredient })
+            });
+            
+            const data = await response.json();
+            document.getElementById('pairingResult').innerHTML = data.pairings || 'Try common pairings!';
+        }
+        
+        async function analyzeSentiment() {
+            const text = document.getElementById('review').value;
+            if (!text) {
+                alert('Please write a review');
+                return;
+            }
+            
+            document.getElementById('sentimentResult').innerHTML = '<div class="loading">📊 Analyzing emotions...</div>';
+            
+            const response = await fetch('/api/ai/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                const emotionIcons = { joy: '😊', surprise: '😲', disgust: '😖', anticipation: '🤔', neutral: '😐' };
+                const emotionText = data.analysis.emotions.map(e => `${emotionIcons[e] || '•'} ${e}`).join(', ');
+                document.getElementById('sentimentResult').innerHTML = `
+                    <strong>Sentiment Score:</strong> ${data.analysis.score}<br>
+                    <strong>Verdict:</strong> ${data.analysis.isPositive ? '😊 Positive' : '😔 Negative'}<br>
+                    <strong>Emotions:</strong> ${emotionText}<br>
+                    <strong>Positive words:</strong> ${data.analysis.positive.join(', ') || 'none'}<br>
+                    <strong>Negative words:</strong> ${data.analysis.negative.join(', ') || 'none'}
+                `;
+            }
+        }
+        
+        async function generateRecipe() {
+            const ingredients = document.getElementById('recipeIngredients').value;
+            const cuisine = document.getElementById('cuisine').value;
+            
+            if (!ingredients) {
+                alert('Please enter ingredients');
+                return;
+            }
+            
+            document.getElementById('recipeResult').innerHTML = '<div class="loading">👨‍🍳 Cooking up a recipe...</div>';
+            
+            const response = await fetch('/api/ai/recipe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ingredients, cuisine })
+            });
+            
+            const data = await response.json();
+            document.getElementById('recipeResult').innerHTML = data.recipe || 'Simple: Cook ingredients together and enjoy!';
+        }
+    </script>
+</body>
+</html>
