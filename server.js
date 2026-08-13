@@ -31,6 +31,9 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'taste_modelling',
   port: process.env.DB_PORT || 3306,
+  ssl: {
+    rejectUnauthorized: false  // ✅ REQUIRED for TiDB Cloud
+  },
   waitForConnections: true,
   connectionLimit: 10
 });
